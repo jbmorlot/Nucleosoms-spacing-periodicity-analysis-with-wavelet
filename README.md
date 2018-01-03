@@ -8,7 +8,7 @@ This code aim to produce study the local period of nucleosome spacing and the wi
 The local period is studied with 
 
 ## How to use it
-### For interactive Start ( with a window to enter data ): --> Recommended version
+### For interactive Start ( Recommended version ):
 	./launch.sh -I ""
 Then fill the fields
 
