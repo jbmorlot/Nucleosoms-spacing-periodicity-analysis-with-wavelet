@@ -1,0 +1,304 @@
+#!/bin/python
+
+import scipy
+from sys import stdout
+import numpy as np
+from math import *
+import os
+
+
+ 
+def wavelet_analysis_pieces_match(data_file_1,data_file_2,name_data_1,name_data_1,data_min,data_max,save_txt_var,local_signal_var,global_signal_var,sub_directory):
+  
+  #Signal convolved with gaussian
+  sigma = 30
+  
+  print("Computing peak position of histogram 1 ...")
+  
+  histogram_mean_1 = np.sum(histogram_1) / histogram_length_1
+  histogram_1_norm = histogram_1[np.where(histogram_1 > histogram_mean_1 * 0.5)[0]]
+  
+  histogram_gaussian_1 = scipy.signal.fftconvolve(histogram_1_norm,signal.gaussian(histogram_length_1, std = sigma),"same")
+  #histogram_gaussian_max_1 = np.amax(histogram_gaussian_1)
+  histogram_gaussian_min_1 = np.amin(histogram_gaussian_1)
+  histogram_gaussian_1 = histogram_gaussian_1 - histogram_gaussian_min_1
+  
+  histogram_gaussian_derivative_1 = scipy.signal.fftconvolve(histogram,np.diff(signal.gaussian(histogram_length_1+1, std = sigma)),"same")
+
+  histogram_width_zero_index = np.where(histogram_gaussian_derivative_1 == 0)[0]
+  histogram_width_positive_index = np.where(histogram_gaussian_derivative_1 > 0)[0]
+  histogram_width_negative_index = np.where(histogram_gaussian_derivative_1 < 0)[0]
+  
+  maximum = 0
+  imax = 0
+  minimum = 0
+  imin = 0
+  width = 0
+  counter_width = 0
+  
+  #Used to print only once each step
+  print_local_width = 0
+
+  k=0
+  
+  peaks_1 = np.zeros(histogram_length_1)
+  
+  for i in xrange(histogram_length_1-1):
+    
+    if histogram_gaussian_derivative_1[i] > 0 and histogram_gaussian_derivative_1[i] > maximum:
+      maximum = histogram_gaussian_derivative_1[i]
+      imax = i
+    
+    if histogram_gaussian_derivative_1[i] < 0 and histogram_gaussian_derivative_1[i] < minimum:
+      minimum = histogram_gaussian_derivative_1[i]
+      imin = i
+    
+    if maximum != 0 and minimum != 0 and histogram_gaussian_derivative_1[i] * histogram_gaussian_derivative_1[i+1] < 0:
+      maximum = 0     
+      minimum = 0
+      
+      if int(abs(imax - imin)/2) + imin < histogram_length_1 : 
+	peaks_1[int(abs(imax - imin)/2) + imin] = int(abs(imax - imin)/2) + imin
+
+            
+    if int(100*float(i+1)/float(histogram_length_1-1))%(10) == 0 and print_local_width < int(100*float(i+1)/float(histogram_length_1-1)):
+      print_local_width = int(100*float(i+1)/float(histogram_length_1-1))
+      stdout.write("\r%d /100" % (100*float(i+1)/float(histogram_length_1-1)))
+      stdout.flush()
+      
+  print ('\nDONE!\n')
+  
+  print("Computing peak position of histogram 2 ...")
+  
+  histogram_mean_2 = np.sum(histogram_2) / histogram_length_2
+  histogram_2_norm = histogram_2[np.where(histogram_2 > histogram_mean_2 * 0.5)[0]]
+  
+  histogram_gaussian_2 = scipy.signal.fftconvolve(histogram_2_norm,signal.gaussian(histogram_length_2, std = sigma),"same")
+  #histogram_gaussian_max_2 = np.amax(histogram_gaussian_2)
+  histogram_gaussian_min_2 = np.amin(histogram_gaussian_2)
+  histogram_gaussian_2 = histogram_gaussian_2 - histogram_gaussian_min_2
+  
+  histogram_gaussian_derivative_2 = scipy.signal.fftconvolve(histogram,np.diff(signal.gaussian(histogram_length_2+1, std = sigma)),"same")
+
+  histogram_width_zero_index = np.where(histogram_gaussian_derivative_2 == 0)[0]
+  histogram_width_positive_index = np.where(histogram_gaussian_derivative_2 > 0)[0]
+  histogram_width_negative_index = np.where(histogram_gaussian_derivative_2 < 0)[0]
+  
+  maximum = 0
+  imax = 0
+  minimum = 0
+  imin = 0
+  width = 0
+  counter_width = 0
+  
+  
+  #Used to print only once each step
+  print_local_width = 0
+  
+  peaks_2 = np.zeros(histogram_length_2)
+  
+  for i in xrange(histogram_length_2-1):
+    
+    if histogram_gaussian_derivative_2[i] > 0 and histogram_gaussian_derivative_2[i] > maximum:
+      maximum = histogram_gaussian_derivative_2[i]
+      imax = i
+    
+    if histogram_gaussian_derivative_2[i] < 0 and histogram_gaussian_derivative_2[i] < minimum:
+      minimum = histogram_gaussian_derivative_2[i]
+      imin = i
+    
+    if maximum != 0 and minimum != 0 and histogram_gaussian_derivative_2[i] * histogram_gaussian_derivative_2[i+1] < 0:
+      maximum = 0     
+      minimum = 0
+      
+      if int(abs(imax - imin)/2) + imin < histogram_length_2 : 
+	peaks_2[int(abs(imax - imin)/2) + imin] = int(abs(imax - imin)/2) + imin 
+
+            
+    if int(100*float(i+1)/float(histogram_length_2-1))%(10) == 0 and print_local_width < int(100*float(i+1)/float(histogram_length_2-1)):
+      print_local_width = int(100*float(i+1)/float(histogram_length_2-1))
+      stdout.write("\r%d /100" % (100*float(i+1)/float(histogram_length_2-1)))
+      stdout.flush()
+      
+  print ('\nDONE!\n')
+  
+  print('Matching between the 2 histograms...')
+  
+  #We locate in each the postion of every peak
+  peaks_1_position = np.where(peaks_1 > 0)[0]
+  peaks_2_position = np.where(peaks_2 > 0)[0]
+  
+  peaks_1_position_length = peaks_1_position.shape[0]
+  peaks_2_position_length = peaks_2_position.shape[0]
+  
+  nucl_state = np.zeros((peaks_2_position_length,4))	#0:gain 1:loss, 2:shift 3:position
+  
+  k=0
+  
+  for j in xrange(peaks_1_position_length):
+    position_1 = peaks_1_position[j]
+    position_2 = peaks_2_position[k]
+    
+    nucl_state[k][3] = position_2
+      
+    if position_2 < position_1 - 80:
+      nucl_state[k][0] = +1	#Gain
+      k += 1
+      break
+    
+    if position_2 > position_1 + 80:
+      nucl_state[k][1] = +1	#Loss
+      k += 1
+      break
+    
+    if position_1 + 80 > position_2 and position_2 > position_1 - 80:
+      if position_1 + 30 > position_2 and position_2 > position_1 - 30:
+	#nucl_state[k][0] = 0	--> Occupancy
+	k += 1
+	break
+      
+    if position_1 + 30 < position_2 and position_2 < position_1 - 30: 
+      nucl_state[k][1] = position_1 - position_2	#Shift
+      k += 1
+      break
+
+  
+  #reverse
+  nucl_state_reverse = np.zeros((peaks_2_position_length,4))	#0:gain 1:loss, 2:shift
+  
+  peaks_1_position_reverse = peaks_1_position[::-1]
+  peaks_2_position_reverse = peaks_2_position[::-1]
+  
+  for j in xrange(peaks_1_position_length):
+    position_1 = peaks_1_position_reverse[j]
+    position_2 = peaks_2_position_reverse[k]
+
+    nucl_state_reverse[k][3] = position_2
+    
+    if position_2 < position_1 - 80:
+      nucl_state_reverse[k][0] = +1	#Gain
+      k += 1
+      break
+    
+    if position_2 > position_1 + 80:
+      nucl_state[k][0] = -1	#Loss
+      k += 1
+      break
+    
+    if position_1 + 80 > position_2 and position_2 > position_1 - 80:
+      if position_1 + 30 > position_2 and position_2 > position_1 - 30:
+	#nucl_state_reverse[k][0] = 0	--> No shift No gain
+	k += 1
+	break
+      
+    if position_1 + 30 < position_2 and position_2 < position_1 - 30: 
+      nucl_state_reverse[k][1] = position_1 - position_2	#Shift
+      k += 1
+      break
+  
+  if global_signal_var == 1:
+
+    #We compute the global changes of nucleosom state
+    os.chdir(sub_directory)
+    
+    nucl_state_gain_loss = nucl_state[:][0:1]
+    nucl_state_shift = nucl_state[:][2]
+    nucl_state_rev_gain_loss = nucl_state_reverse[:][0:1]
+    nucl_state_rev_shift = nucl_state_reverse[:][2]
+    
+    global_gain_loss = (np.sum(nucl_state_gain_loss, axis=0) + np.sum(nucl_state_rev_gain_loss, axis=0))/2
+    
+    #Shift histogram
+    max_shift_forward = np.amax(nucl_state_shift)
+    max_shift_reverse = np.amax(nucl_state_rev_shift)
+    max_shift = max(max_shift_forward, max_shift_reverse)
+    
+    histogram_shift = np.zeros(max_shift + 1)
+    
+    for k in xrange(peaks_2_position_length)
+      histogram_shift[int(nucl_state_shift[k])] += 1
+      histogram_shift[int(nucl_state_rev_shift[k])] += 1
+    
+    if save_txt_var == 1:
+      np.savetxt('Nucleosom_comparaison_states_data_min{2}_data_max{3}.txt'.format(data_min,data_max),nucl_state)
+      np.savetxt('Nucleosom_comparaison_states_gain_loss_data_min{2}_data_max{3}.txt'.format(data_min,data_max),global_gain_loss)
+      np.savetxt('Nucleosom_comparaison_states_shift_histogram_data_min{2}_data_max{3}.txt'.format(data_min,data_max),nhistogram_shift)
+    
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    
+    fig1 = plt.figure()
+    ax11 = fig1.add_subplot(111)
+    ax11.plot(np.linspace(0,max_shift, max_shift), histogram_shift)
+    ax11.set_title('Shift Histogram')
+    ax11.set_xlabel('Shift (bp)')
+    ax11.set_ylabel('Frequency')
+    ax11.tick_params(axis='x')
+    ax11.tick_params(axis='y')
+    ax11.grid() 
+    ax11.axis('tight')
+    ax11.set_xlim([0,max_shift])
+  
+  if local_signal_var == 1:
+    
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+
+    fig1 = plt.figure()
+    ax11 = fig1.add_subplot(211)
+    ax12 = fig1.add_subplot(212)
+
+    ax11.plot(np.linspace(data_min,data_max, data_max - data_min ),histogram_gaussian_1)
+    ax11.set_title('Nucleosom Position Forward Matching: '+ name_data_1)
+    ax11.set_xlabel('Position (bp)')
+    ax11.set_ylabel('Frequency')
+    ax11.tick_params(axis='x')
+    ax11.tick_params(axis='y')
+    ax11.grid() 
+    ax11.axis('tight')
+    ax11.set_xlim([data_min,data_max])
+    
+    ax12.plot(np.linspace(data_min,data_max, data_max - data_min ),histogram_gaussian_2)
+    ax12.set_title('Nucleosom Position '+ name_data_2)
+    ax12.set_xlabel('Position (bp)')
+    ax12.set_ylabel('Frequency')
+    ax12.tick_params(axis='x')
+    ax12.tick_params(axis='y')
+    ax12.grid() 
+    ax12.axis('tight')
+    ax12.set_xlim([data_min,data_max])
+    
+
+    for i in xrange(peaks_1_position_length):
+      el1 = Ellipse((peaks_1_position[i], 0.5), 0.5, 0.5,'k')
+      ax11.add_patch(el1)
+      
+    for i in xrange(peaks_2_position_length):
+      #0:gain 1:loss, 2:shift
+      if nucl_state[i][0] != 0
+	el2 = Ellipse((peaks_2_position[i], 0.5), 0.5, 0.5,'r')
+	ax12.add_patch(el2)
+	
+      if nucl_state[i][1] != 0
+	el2 = Ellipse((peaks_2_position[i], 0.5), 0.5, 0.5,'b')
+	ax12.add_patch(el2)
+	
+      if nucl_state[i][2] != 0
+	el2 = Ellipse((peaks_2_position[i], 0.5), 0.5, 0.5,'g')
+	ax12.add_patch(el2)
+      
+      if nucl_state_reverse[i][0] != 0
+	el2 = Ellipse((peaks_2_position_reverse[i], -0.5), 0.5, 0.5,'r')
+	ax12.add_patch(el2)
+	
+      if nucl_state_reverse[i][1] != 0
+	el2 = Ellipse((peaks_2_position_reverse[i], -0.5), 0.5, 0.5,'b')
+	ax12.add_patch(el2)
+	
+      if nucl_state_reverse[i][2] != 0
+	el2 = Ellipse((peaks_2_position_reverse[i], -0.5), 0.5, 0.5,'g')
+	ax12.add_patch(el2)
+    
+  return 0

@@ -1,0 +1,93 @@
+INFORMATION ON HOW TO USE THE PROGRAM
+
+PURPOSE OF THE PROGRAM:
+
+Analyse the local period and the local width from the position of nucleosoms
+
+
+HOW TO LAUNCH THE PROGRAM:
+
+[-] For interactive Start ( with a window to enter data ): --> Recommended version
+	./launch.sh -I ""
+	Then fill the fields
+
+[-] For Non Interactive Start (for clusters for exemple):
+	Open launch.sh and change directly the parameters on the file, then type in a terminal
+	./launch.sh -N "/path_to_the_file/file.wig" Number_or_string
+	with Number_or_string a number or a string which will be inserted in the output file name print_no_interaction(Number_or_string).txt
+		--> allow you to follow multiple parallel launch of the program 
+	if you want to check the progress of the work, type in another terminal (in repertory/PRINT): 
+	tail -f print_no_interactive.txt
+
+
+IF THE PROGRAM CRASH:
+
+You can restart the program where it crashed with:
+
+	./launch.sh -R "/path_to_the_file/file.wig"
+OR
+	./launch.sh -I ""
+	Then select your previous data file and Click on "Restart"
+
+In both case, the parameters of the previous simulation will be loaded.
+
+
+DATA FORMAT:
+
+The program accept ONLY histogram of the position of nucleosom (1 bin per line) and NOT directly the postion of all nucleosom!
+
+
+DESCRIPTION OF THE PARAMETERS:
+
+launch_all= 0 OR 1	--> Compute all files in the same repertory selected ( Be careful of undesired file! ) 0:No 1:Yes
+data_min > 0 		--> First line of the histogram to be read	
+data_max > data_min	--> Last line of the histogram to be read
+period_min > 0		--> Period Minimal
+period_max > period_min	--> Period Maxial
+width_min > 0		--> Width Minimal
+width_max > width_min	--> Width Maximal
+bin_period > 0 		--> Bin size for the study of the period ( Warning: (period max - period min)/bin period have to be an integer! )
+plot= 0 OR 1		--> Display the plots 0:No 1:Yes
+save= 0 OR 1		--> Save the plots 0:No 1:Yes
+save_txt= 0 OR 1	--> Save the data into text files 0:No 1:Yes
+multiprocess= 0 OR 1	--> Activate the multiprocessing (much faster!) 0:No 1:Yes
+local_var= 0 OR 1	--> Plot the Local Signal + Local Period + Local Width 0:No 1:Yes
+global_var= 0 OR 1	--> Plot the Histograms of Period + Histograms of Width 0:No 1:Yes
+
+
+NEEDED LIBRAIRIES
+
+Python (at least 2.7)
+Scipy (last version):
+	pip install scipy
+	pip install scipy --upgrade
+Numpy (last version):
+	pip install numpy
+	pip install numpy --upgrade
+Matplotlib (last version):
+	pip install matplotlib
+	pip install matplotlib --upgrade
+Psutil (last version)
+	pip install psutil
+	pip install psutil --upgrade
+
+Note: If you are running on a public machine, you can install a virtual environnement, which allow to install librairies without using root (--> See virtualenv documentation)
+
+
+PRECOMPUTE
+
+It is a small program which to give an histogram of the positions from a data file. 
+
+To launch it: 	
+		./launch_precompute.sh "/path_to_the_file/file" 
+
+ It has to be modified in each case:
+	open precompute.py and change the function Operation_on_column (warning: column[0] = 1st column of your data file)
+
+In the launch_precompute.sh you can change the option launch all (0:Yes 1:No)
+	--> It will compute every file in the repertory (even repertory, so be careful to have only your files)
+
+
+
+
+
