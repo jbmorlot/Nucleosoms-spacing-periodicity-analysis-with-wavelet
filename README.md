@@ -1,5 +1,5 @@
-# Nucleosoms spacing periodicity analysis with wavelet
-Nucleosomes are proteins, the histones, around which the DNA is enrolled. This complex is present every 200 bp in human cells
+# Nucleosoms spacing periodicity analysis with wavelet (Stage M2)
+Nucleosomes are composed of proteins, the histones, around which the DNA is enrolled. This complex is present every 200 bp in human cells
 in average and it plays an important role in the control of gene expression [1].
 The local period of the nucleosomes spacing can gives access to different layers of chromatine organisation and therefore genic regulation.
 
