@@ -1,10 +1,11 @@
-# Nucleosoms_spacing_periodicity_analysis_with_wavelet
+# Nucleosoms spacing periodicity analysis with wavelet
 Nucleosomes are proteins, the histones, around which the DNA is enrolled. This complex is present every 200 bp in human cells
 in average and it plays an important role in the control of gene expression [1].
 The local period of the nucleosomes spacing can gives access to different layers of chromatine organisation and therefore genic regulation.
 
 ## Purpose
 This code aim to produce study the local period of nucleosome spacing and the width of the peaks.
+The local period is studied with 
 
 ## How to use it
 ### For interactive Start ( with a window to enter data ): --> Recommended version
