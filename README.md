@@ -50,7 +50,7 @@ plot=0\
 save=1\
 save_txt=0\
 local_var=0\
-global_var=1\
+global_var=1
 
 ## Exemple 2
 
@@ -70,7 +70,7 @@ with
   save=1\
   save_txt=0\
   local_var=1\
-  global_var=0\
+  global_var=0
 
 
 
