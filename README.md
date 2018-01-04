@@ -4,7 +4,7 @@ in average and it plays an important role in the control of gene expression [1].
 The local period of the nucleosomes spacing can gives access to different layers of chromatine organisation and therefore genic regulation.
 
 ## Purpose
-This code aim to produce study the local period of nucleosome spacing and the width of the peaks.
+This code aim to study the local period of nucleosome spacing and the width of the peaks.
 The local period is studied with 
 
 ## How to use it
